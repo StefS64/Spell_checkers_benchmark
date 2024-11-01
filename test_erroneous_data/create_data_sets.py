@@ -1,5 +1,6 @@
 import json
 import os
+import string
 import random
 import pandas as pd
 from tqdm import tqdm
@@ -8,7 +9,7 @@ from tqdm import tqdm
 # TODO add skew types think of a smart way
 BATCH_SIZE = 1000
 NUMBER_OF_WORD_VARIATIONS = 10
-
+LETTERS = string.ascii_letters
 
 # Specify the directory containing your JSON files
 source_directory_path = './test_erroneous_data/standardized_data/single_words' 
@@ -36,14 +37,16 @@ def subtract_letter(word):
     if len(word) > 1:
         position = random.randint(0, len(word) - 1)
         return word[:position] + word[position + 1:]
+    else:
+        return word
     
 def replace_letter(word):
     position = random.randint(0, len(word) - 1)
-    return word[:position] + chr(random.randint(32, 126)) + word[position + 1:]
+    return word[:position] + random.choice(LETTERS) + word[position + 1:]
 
 def add_letter(word):
     position = random.randint(0, len(word) - 1)
-    return word[:position] + chr(random.randint(32, 126)) + word[position:]
+    return word[:position] + random.choice(LETTERS) + word[position:]
 
 def create_augmented_word(word):
     transformations = [
@@ -62,7 +65,7 @@ def create_augmented_word(word):
 def process_in_batches(dictionary, write_file, batch_size=BATCH_SIZE, variation=NUMBER_OF_WORD_VARIATIONS):
     data_frame = pd.DataFrame({"Input": [],"Correct": []})
     keys = list(dictionary.keys())
-    for i in tqdm(range(0, len(keys), batch_size)):
+    for i in tqdm(range(0, 100, batch_size)):
         new_data = []
         batch_words = keys[i:i + batch_size]  # Get the current batch of keys
         # print(f"Processing batch {i // batch_size + 1} (Keys: {batch_words})")

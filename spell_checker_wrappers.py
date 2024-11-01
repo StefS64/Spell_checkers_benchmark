@@ -14,5 +14,5 @@ class PySpellChecker:
         for word in words:
             if word not in self.spell:
                 correction = self.spell.correction(word)
-                corrections.append((word, correction))
+                corrections.append((correction))
         return corrections
