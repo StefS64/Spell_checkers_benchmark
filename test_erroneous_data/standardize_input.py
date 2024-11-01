@@ -70,7 +70,7 @@ def parse_texts():
         
         with open(destination_file, 'w') as json_file:
             json.dump(sentences_dict, json_file)
-        print(f"Created file: {destination_file}")
+        print(f"Created file: \033[92m{destination_file}\033[0m")
     
 copy_to_destination('words_dictionary_english.json')
 parse_texts()

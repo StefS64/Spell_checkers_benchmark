@@ -6,18 +6,18 @@ import pandas as pd
 from tqdm import tqdm
 # TODO Create a user interaction system (maybe don't create all of data sets but only some).
 # TODO add skew types think of a smart way
-BATCH_SIZE = 100
-NUMBER_OF_WORD_VARIATIONS = 10
-DATA_SIZE_WORDS = 20
-DATA_SIZE_SENTENCES = 10
-LETTERS = string.ascii_letters
+import config  # Importing the configuration file
 
-# Specify the directory containing your JSON files
+BATCH_SIZE = config.BATCH_SIZE
+NUMBER_OF_WORD_VARIATIONS = config.NUMBER_OF_WORD_VARIATIONS
+DATA_SIZE_WORDS = config.DATA_SIZE_WORDS
+DATA_SIZE_SENTENCES = config.DATA_SIZE_SENTENCES
+LETTERS = config.LETTERS
 
-source_directory_path_words = './test_erroneous_data/standardized_data/single_words' 
-source_directory_path_sentences = './test_erroneous_data/standardized_data/sentences'
-destination_directory_path_words = './test_erroneous_data/test_words' 
-destination_directory_path_sentences = './test_erroneous_data/test_sentences' 
+source_directory_path_words = config.SOURCE_DIRECTORY_PATH_WORDS
+source_directory_path_sentences = config.SOURCE_DIRECTORY_PATH_SENTENCES
+destination_directory_path_words = config.DESTINATION_DIRECTORY_PATH_WORDS
+destination_directory_path_sentences = config.DESTINATION_DIRECTORY_PATH_SENTENCES 
 
 # Dictionary to store all loaded JSON data, keyed by filename
 correct_word_dictionaries = {}
@@ -133,7 +133,7 @@ def create_data(source_path, destination_path, data_size):
 
     for filename in valid_filenames:
         words = correct_word_dictionaries[filename]
-        print(f"Creating test batch from {filename}")
+        print(f"Creating test batch from \033[92m{filename}\033[0m")
         process_in_batches(words, os.path.join(destination_path, filename), data_size)
 
 create_data(source_directory_path_words, destination_directory_path_words, DATA_SIZE_WORDS)

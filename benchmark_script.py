@@ -3,13 +3,16 @@ import os
 import json
 from tqdm import tqdm
 from spell_checker_wrappers import *
-BATCH_SIZE = 100
+
+# Change this variable in need of  batch increase.
+BATCH_SIZE = 50
 
 spell_checkers = {"PySpell":PySpellChecker(), "TextBlob":TextBlobChecker(), "OliverTransform": TransformersSpellChecker()}
 
-
+# TODO add more datasets (not neccesarily local)
+#
 # using hugging face datasets
-from datasets import load_dataset
+# from datasets import load_dataset
 
 # dataset = load_dataset("pnr-svc/spellchecker-dataset")['train']
 # print(dataset['correct'][:5])
@@ -39,6 +42,7 @@ def benchmark_data(data, spell_checker, batch_size=BATCH_SIZE):
         correct += sum(a != b for a, b in zip(output_list, data['Correct'][i:i+batch_size].to_list()))
     return {"Correct:": correct, "Number_of_queries:": len(data), "Accuracy": correct/len(data)}
 
+
 def benchmark_on_all_local_datasets(spell_checker, checker_name):
     results = {}
     for datasets_path in datasets_directory_paths:
@@ -49,6 +53,7 @@ def benchmark_on_all_local_datasets(spell_checker, checker_name):
                 print(f"Benchmarking \033[92m{checker_name}\033[0m over data set: \033[92m{filename}\033[0m")
                 results[filename] = benchmark_data(test_data, spell_checker)
     return results
+
 
 def create_benchmarks():
     benchmarks = {}
