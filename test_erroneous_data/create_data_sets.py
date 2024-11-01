@@ -5,32 +5,24 @@ import random
 import pandas as pd
 from tqdm import tqdm
 # TODO Create a user interaction system (maybe don't create all of data sets but only some).
-# TODO Right now just create a working benchmark for one directory.
 # TODO add skew types think of a smart way
-BATCH_SIZE = 1000
+BATCH_SIZE = 100
 NUMBER_OF_WORD_VARIATIONS = 10
+DATA_SIZE_WORDS = 20
+DATA_SIZE_SENTENCES = 10
 LETTERS = string.ascii_letters
 
 # Specify the directory containing your JSON files
-source_directory_path = './test_erroneous_data/standardized_data/single_words' 
-destination_directory_path = './test_erroneous_data/test_words' 
+
+source_directory_path_words = './test_erroneous_data/standardized_data/single_words' 
+source_directory_path_sentences = './test_erroneous_data/standardized_data/sentences'
+destination_directory_path_words = './test_erroneous_data/test_words' 
+destination_directory_path_sentences = './test_erroneous_data/test_sentences' 
+
 # Dictionary to store all loaded JSON data, keyed by filename
 correct_word_dictionaries = {}
 
 # Get valid filenames
-valid_filenames = []
-for filename in os.listdir(source_directory_path):
-    if filename.endswith('.json'):
-        valid_filenames.append(filename)
-
-
-# Loop through each file in the directory
-for filename in valid_filenames:
-    file_path = os.path.join(source_directory_path, filename)
-    with open(file_path, 'r') as file:
-        data = json.load(file)
-        correct_word_dictionaries[filename] = data
-
 # Now 'correct_word_dictionaries' contains all JSON contents, accessible by filename
 
 def subtract_letter(word):
@@ -57,30 +49,92 @@ def create_augmented_word(word):
     ]
     
     transformation = random.choice(transformations)
-    incorrect_word = transformation(word)
+    return transformation(word)
+
+def change_words(sentence):
+    words = sentence.split(' ')
+
+    num_changes = random.randint(1,len(words))
     
-    return incorrect_word
+    # Randomly select indices to change
+    indices_to_change = random.sample(range(len(words)), num_changes)
+    
+    # Change the selected words
+    for index in indices_to_change:
+        words[index] = create_augmented_word(words[index]) 
+    
+    # Join the words back into a sentence
+    return ' '.join(words)
 
 
-def process_in_batches(dictionary, write_file, batch_size=BATCH_SIZE, variation=NUMBER_OF_WORD_VARIATIONS):
+
+def duplicate_word(sentence):
+    words = sentence.split(' ')
+    
+    index_to_duplicate = random.randint(0, len(words) - 1)
+    word_to_duplicate = words[index_to_duplicate]
+    
+    words.insert(index_to_duplicate + 1, word_to_duplicate)
+    
+    return ' '.join(words)
+
+def create_augmented_sentence(sentence):
+    transformations = [
+        lambda s: subtract_letter(s),
+        lambda s: s,
+        lambda s: replace_letter(s),
+        lambda s: add_letter(s),
+        lambda s: change_words(s),
+        lambda s: duplicate_word(s)
+    ]
+    transformation = random.choice(transformations)
+    return transformation(sentence)
+
+def create_augmented_key(key):
+    if ' ' not in key:
+        return create_augmented_word(key)
+    else:
+        return create_augmented_sentence(key)
+
+
+def process_in_batches(dictionary, write_file, data_size, batch_size=BATCH_SIZE, variation=NUMBER_OF_WORD_VARIATIONS):
     data_frame = pd.DataFrame({"Input": [],"Correct": []})
     keys = list(dictionary.keys())
-    for i in tqdm(range(0, 100, batch_size)):
+    for i in tqdm(range(0, data_size, batch_size)):
         new_data = []
-        batch_words = keys[i:i + batch_size]  # Get the current batch of keys
+        index = random.randint(0, len(keys))
+        batch_keys = keys[index:index + min(batch_size, data_size - batch_size*i)]  # Get the current batch of keys
         # print(f"Processing batch {i // batch_size + 1} (Keys: {batch_words})")
-        for word in batch_words:
+        for key in batch_keys:
             for i in range(variation):
-                generated_word = create_augmented_word(word)
+                generated_word = create_augmented_key(key)
                 # We check if the generated word is perhaps a valid word.
                 # If thats the case we abort creating the test.
-                if generated_word != word and generated_word not in dictionary: 
-                    new_data.append({"Input": generated_word, "Correct": word})  # Print the incorrect to correct mapping
+                if generated_word != key and generated_word not in dictionary: 
+                    new_data.append({"Input": generated_word, "Correct": key})
         new_df = pd.DataFrame(new_data)
         data_frame = pd.concat([data_frame, new_df], ignore_index=True)
     data_frame.to_json(write_file, orient="records", lines=True)
 
-for filename in valid_filenames:
-    words = correct_word_dictionaries[filename]
-    print(f"Creating test batch from {filename}")
-    process_in_batches(words, os.path.join(destination_directory_path, filename))
+
+def create_data(source_path, destination_path, data_size):
+    valid_filenames = []
+    for filename in os.listdir(source_path):
+        if filename.endswith('.json'):
+            valid_filenames.append(filename)
+
+
+    # Loop through each file in the directory
+    for filename in valid_filenames:
+        file_path = os.path.join(source_path, filename)
+        with open(file_path, 'r') as file:
+            data = json.load(file)
+            correct_word_dictionaries[filename] = data
+
+    for filename in valid_filenames:
+        words = correct_word_dictionaries[filename]
+        print(f"Creating test batch from {filename}")
+        process_in_batches(words, os.path.join(destination_path, filename), data_size)
+
+create_data(source_directory_path_words, destination_directory_path_words, DATA_SIZE_WORDS)
+create_data(source_directory_path_sentences, destination_directory_path_sentences, DATA_SIZE_SENTENCES)
