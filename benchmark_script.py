@@ -3,11 +3,16 @@ import os
 import json
 from tqdm import tqdm
 from spell_checker_wrappers import *
+import concurrent.futures
 
-# Change this variable in need of  batch increase.
-BATCH_SIZE = 50
-
-spell_checkers = {"PySpell":PySpellChecker(), "TextBlob":TextBlobChecker(), "OliverTransform": TransformersSpellChecker()}
+# Change this variable in need of batch increase
+BATCH_SIZE = 80
+spell_checkers = { 
+    "PySpell": {"class": PySpellChecker(), "concurrent" : True},
+    "TextBlob": {"class": TextBlobChecker(), "concurrent" : True},
+    "OliverTransform": {"class": TransformersSpellChecker(), "concurrent" : False},
+}
+# "HunspellConcurrent": {"class": HunspellChecker(), "concurrent" : True}, "SymSpellConcurrent": {"class": SymSpellChecker(), "concurrent" : True}, "NorvigConcurrent": {"class": NorvigSpellChecker(), "concurrent" : True}}
 
 # TODO add more datasets (not neccesarily local)
 #
@@ -33,13 +38,24 @@ def compare_lists(list1, list2):
     return differ
 
 
-def benchmark_data(data, spell_checker, batch_size=BATCH_SIZE):
+def process_chunk(data_chunk, spell_checker):
     correct = 0
-    for i in tqdm(range(0, len(data), batch_size)):
-        input = data['Input'][i:i+batch_size].to_list()    
-        # print(input)
-        output_list = spell_checker.check(input)
-        correct += sum(a != b for a, b in zip(output_list, data['Correct'][i:i+batch_size].to_list()))
+    input = data_chunk['Input'].to_list()
+    output_list = spell_checker.check(input)
+    correct += sum(a != b for a, b in zip(output_list, data_chunk['Correct'].to_list()))
+    return correct
+
+def benchmark_data(data, spell_checker, run_concurrent, batch_size=BATCH_SIZE):
+    chunks = [data.iloc[i:i + batch_size] for i in range(0, len(data), batch_size)]
+    correct = 0
+    if run_concurrent:
+        num_workers = os.cpu_count()
+        with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
+            results = list(tqdm(executor.map(process_chunk, chunks, [spell_checker]*len(chunks)), total=len(chunks)))
+    else: 
+        results = [process_chunk(chunk, spell_checker) for chunk in tqdm(chunks)]
+    
+    correct = sum(results)
     return {"Correct:": correct, "Number_of_queries:": len(data), "Accuracy": correct/len(data)}
 
 
@@ -51,7 +67,7 @@ def benchmark_on_all_local_datasets(spell_checker, checker_name):
                 file_path = os.path.join(datasets_path, filename)
                 test_data = pd.read_json(file_path, lines=True)
                 print(f"Benchmarking \033[92m{checker_name}\033[0m over data set: \033[92m{filename}\033[0m")
-                results[filename] = benchmark_data(test_data, spell_checker)
+                results[filename] = benchmark_data(test_data, spell_checker['class'], spell_checker['concurrent'])
     return results
 
 

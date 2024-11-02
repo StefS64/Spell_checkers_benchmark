@@ -103,7 +103,7 @@ def process_in_batches(dictionary, write_file, data_size, batch_size=BATCH_SIZE,
     for i in tqdm(range(0, data_size, batch_size)):
         new_data = []
         index = random.randint(0, len(keys))
-        batch_keys = keys[index:index + min(batch_size, data_size - batch_size*i)]  # Get the current batch of keys
+        batch_keys = keys[index:index + min(batch_size, max(data_size - batch_size*i, 0))]  # Get the current batch of keys
         # print(f"Processing batch {i // batch_size + 1} (Keys: {batch_words})")
         for key in batch_keys:
             for i in range(variation):
@@ -129,12 +129,8 @@ def create_data(source_path, destination_path, data_size):
         file_path = os.path.join(source_path, filename)
         with open(file_path, 'r') as file:
             data = json.load(file)
-            correct_word_dictionaries[filename] = data
-
-    for filename in valid_filenames:
-        words = correct_word_dictionaries[filename]
         print(f"Creating test batch from \033[92m{filename}\033[0m")
-        process_in_batches(words, os.path.join(destination_path, filename), data_size)
+        process_in_batches(data, os.path.join(destination_path, filename), data_size)
 
 create_data(source_directory_path_words, destination_directory_path_words, DATA_SIZE_WORDS)
 create_data(source_directory_path_sentences, destination_directory_path_sentences, DATA_SIZE_SENTENCES)

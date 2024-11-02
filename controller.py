@@ -5,7 +5,7 @@ import argparse
 def run_standardize_input():
     print("Running standardize_input.py...")
     subprocess.run(["python3", "./test_erroneous_data/standardize_input.py"])
-# 
+ 
 def run_create_datasets():
     print("Running create_datasets.py...")
     subprocess.run(["python3", "./test_erroneous_data/create_datasets.py"])
@@ -25,7 +25,6 @@ def run_all():
     run_benchmark_script()
     run_visualize_benchmark()
 
-# Main interface
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Run individual scripts or the entire workflow"

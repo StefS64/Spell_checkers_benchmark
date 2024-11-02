@@ -5,8 +5,8 @@ BATCH_SIZE = 500
 # DATA_SIZE how many data will be pulled from the input files.
 # Every pull from the data will create about 20 variations.
 NUMBER_OF_WORD_VARIATIONS = 20
-DATA_SIZE_WORDS = 200
-DATA_SIZE_SENTENCES = 100
+DATA_SIZE_WORDS = 1000
+DATA_SIZE_SENTENCES = 800
 LETTERS = string.ascii_letters
 
 # Directory's containing specific files
