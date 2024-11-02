@@ -8,16 +8,12 @@
 
 Use `script_name` script to install the right checkers onto your computer.
 
-    ```
     pip install pyspellchecker textblob language-tool-python
     pip install datasets
-    ```
 
 ### Visualize Results
 
-    ```
     python3 -m controller.py visualize
-    ```
 
 ### Run a New Benchmark
 
@@ -26,6 +22,4 @@ Use `script_name` script to install the right checkers onto your computer.
 
 To run a full benchmark:
 
-    ```
     python3 -m controller.py all
-    ```
