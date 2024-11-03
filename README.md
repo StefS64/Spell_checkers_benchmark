@@ -68,7 +68,7 @@ The OliverTransform is a proof of concept so with some tweaking it may achieve m
 ___
 Overall, the choice of spell checker depends on the specific requirements of the application, such as the need for accuracy, speed, and available computational resources.
 
-**On the other hand LLM based spellcheckers may prove to be more useful when working with multiple languages no need to detect what language is being used thus we lose one layer of abstraction.**
+**On the other hand LLM based spellcheckers may prove to be more useful when working with multiple languages no need to detect what language is being used thus we lose one layer of abstraction. Thus the best approach would be to integrate both of the solutions in the same time for easier problems use the fast solution and then use LLMs for more challenging spellchecks**
 
 
 
