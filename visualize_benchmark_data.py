@@ -34,26 +34,25 @@ df = pd.DataFrame({
 })
 
 sns.set_theme(style="whitegrid")
-plt.figure(figsize=(12, 6))
+fig1 = plt.figure(figsize=(12, 6))
 bar_plot = sns.barplot(x="Dataset", y="Accuracy", hue="Checker", data=df)
-# Customize the x-axis labels to include number of queries
-plt.gca().set_yticklabels([f"{int(y)}%" for y in bar_plot.get_yticks()])
+
 dataset_labels = []
+
 for dataset in df['Dataset'].unique():
     num_queries = df[df['Dataset'] == dataset]['Queries'].iloc[0]
     dataset_labels.append(f"{dataset}\n(Queries: {num_queries})")
 
-# Apply custom labels
-# Remove the secondary y-axis label
-
+# Set y-axis labels to percentage
+plt.gca().set_yticklabels([f"{int(y)}%" for y in bar_plot.get_yticks()])
 
 fig, axes = plt.subplots(1, figsize=(12, 6))
 
-# Plot accuracy
 sns.set_theme(style="whitegrid")
 # Plot time taken
 time_plot = sns.barplot(x="Dataset", y="Time", hue="Checker", data=df)
 plt.gca().set_yticklabels([f"{y:.2f}s" for y in time_plot.get_yticks()])
+
 for p in time_plot.patches:
     if p.get_height() > 0:
         print(p.get_height())
@@ -63,7 +62,11 @@ for p in time_plot.patches:
                         xytext = (0, 9),
                         textcoords = 'offset points')
 
+# set x-axis labels
 bar_plot.set_xticklabels(dataset_labels)
 time_plot.set_xticklabels(dataset_labels)
+
 plt.tight_layout()  
+fig1.savefig('./benchmarks/benchmark_accuracy_results.png')
+fig.savefig('./benchmarks/benchmark_time_results.png')
 plt.show()

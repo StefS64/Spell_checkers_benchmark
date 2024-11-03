@@ -1,11 +1,8 @@
 import json
 import os
-import string
 import random
 import pandas as pd
 from tqdm import tqdm
-# TODO Create a user interaction system (maybe don't create all of data sets but only some).
-# TODO add skew types think of a smart way
 import config  # Importing the configuration file
 
 BATCH_SIZE = config.BATCH_SIZE
@@ -100,11 +97,12 @@ def create_augmented_key(key):
 def process_in_batches(dictionary, write_file, data_size, batch_size=BATCH_SIZE, variation=NUMBER_OF_WORD_VARIATIONS):
     data_frame = pd.DataFrame({"Input": [],"Correct": []})
     keys = list(dictionary.keys())
+    
     for i in tqdm(range(0, data_size, batch_size)):
         new_data = []
         index = random.randint(0, len(keys))
         batch_keys = keys[index:index + min(batch_size, max(data_size - batch_size*i, 0))]  # Get the current batch of keys
-        # print(f"Processing batch {i // batch_size + 1} (Keys: {batch_words})")
+        
         for key in batch_keys:
             for i in range(variation):
                 generated_word = create_augmented_key(key)
@@ -112,6 +110,7 @@ def process_in_batches(dictionary, write_file, data_size, batch_size=BATCH_SIZE,
                 # If thats the case we abort creating the test.
                 if generated_word != key and generated_word not in dictionary: 
                     new_data.append({"Input": generated_word, "Correct": key})
+        
         new_df = pd.DataFrame(new_data)
         data_frame = pd.concat([data_frame, new_df], ignore_index=True)
     data_frame.to_json(write_file, orient="records", lines=True)
@@ -119,6 +118,7 @@ def process_in_batches(dictionary, write_file, data_size, batch_size=BATCH_SIZE,
 
 def create_data(source_path, destination_path, data_size):
     valid_filenames = []
+    
     for filename in os.listdir(source_path):
         if filename.endswith('.json'):
             valid_filenames.append(filename)
@@ -127,8 +127,10 @@ def create_data(source_path, destination_path, data_size):
     # Loop through each file in the directory
     for filename in valid_filenames:
         file_path = os.path.join(source_path, filename)
+        
         with open(file_path, 'r') as file:
             data = json.load(file)
+            
         print(f"Creating test batch from \033[92m{filename}\033[0m")
         process_in_batches(data, os.path.join(destination_path, filename), data_size)
 

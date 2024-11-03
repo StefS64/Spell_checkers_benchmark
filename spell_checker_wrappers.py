@@ -10,6 +10,7 @@ class PySpellChecker:
         else:
             words = text
         corrections = []
+        
         for word in words:
             if word not in self.spell:
                 correction = self.spell.correction(word)
@@ -49,6 +50,7 @@ class TransformersSpellChecker:
         # If the string of words is to large create smaller chunks.
         corrected_output = []
         start = 0
+
         while start < len(text):
             end = min(start + self.max_input_length, len(text))# Transform can take in maximally 1024 characters into model.
 
@@ -63,7 +65,5 @@ class TransformersSpellChecker:
 
             start = end + 1  # Move to the next chunk
 
-        # Join all corrected chunks back together
+        # Join all corrected chunks back together and return the result
         return " ".join(corrected_output)
-        # Return the corrected text
-        return corrected_output

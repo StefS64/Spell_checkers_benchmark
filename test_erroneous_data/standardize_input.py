@@ -53,7 +53,7 @@ def parse_texts():
         '\u2026': '...', # Ellipsis
         '\u2013': '-',   # En dash
         '\u2014': '-',   # Em dash
-        '\n'    : " ",   # endl  
+        '\n'    : " ",   # End of line
     }
     
     for file_name in os.listdir(source_path_texts):
@@ -64,6 +64,7 @@ def parse_texts():
             for old, new in replacements.items():
                 text = text.replace(old, new)
             text = re.sub(r'\s+', ' ', text).strip()
+        
         sentences = sent_tokenize(text)
         destination_file = os.path.join(destination_path_texts, f"{os.path.splitext(file_name)[0]}.json")
         sentences_dict = {sentence: 1 for sentence in sentences}
