@@ -1,3 +1,4 @@
+import time
 import pandas as pd
 import os
 import json
@@ -6,7 +7,7 @@ from spell_checker_wrappers import *
 import concurrent.futures
 
 # Change this variable in need of batch increase
-BATCH_SIZE = 80
+BATCH_SIZE = 64
 spell_checkers = { 
     "PySpell": {"class": PySpellChecker(), "concurrent" : True},
     "TextBlob": {"class": TextBlobChecker(), "concurrent" : True},
@@ -48,15 +49,21 @@ def process_chunk(data_chunk, spell_checker):
 def benchmark_data(data, spell_checker, run_concurrent, batch_size=BATCH_SIZE):
     chunks = [data.iloc[i:i + batch_size] for i in range(0, len(data), batch_size)]
     correct = 0
+    start_time = time.time()
     if run_concurrent:
         num_workers = os.cpu_count()
         with concurrent.futures.ProcessPoolExecutor(max_workers=num_workers) as executor:
-            results = list(tqdm(executor.map(process_chunk, chunks, [spell_checker]*len(chunks)), total=len(chunks)))
+            try:
+                results = list(tqdm(executor.map(process_chunk, chunks, [spell_checker]*len(chunks)), total=len(chunks)))
+            finally:
+                executor.shutdown(wait=True)
     else: 
         results = [process_chunk(chunk, spell_checker) for chunk in tqdm(chunks)]
     
     correct = sum(results)
-    return {"Correct:": correct, "Number_of_queries:": len(data), "Accuracy": correct/len(data)}
+    end_time = time.time()
+    print(f"Time taken: {end_time - start_time}")
+    return {"Correct:": correct, "Number_of_queries:": len(data), "Accuracy": correct/len(data), "Time": end_time - start_time}
 
 
 def benchmark_on_all_local_datasets(spell_checker, checker_name):

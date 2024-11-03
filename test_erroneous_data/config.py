@@ -1,11 +1,11 @@
 # config.py
 import string
 # How big batches will the data be generated.
-BATCH_SIZE = 500
+BATCH_SIZE = 512
 # DATA_SIZE how many data will be pulled from the input files.
 # Every pull from the data will create about 20 variations.
-NUMBER_OF_WORD_VARIATIONS = 20
-DATA_SIZE_WORDS = 1000
+NUMBER_OF_WORD_SENTENCE_VARIATIONS = 20
+DATA_SIZE_WORDS = 5000
 DATA_SIZE_SENTENCES = 800
 LETTERS = string.ascii_letters
 

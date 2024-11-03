@@ -12,6 +12,8 @@ datasets = []
 correct_counts = []
 query_counts = []
 accuracies = []
+times = []
+
 
 for checker, checker_data in data.items():
     for dataset, metrics in checker_data.items():
@@ -20,34 +22,48 @@ for checker, checker_data in data.items():
         correct_counts.append(metrics["Correct:"])
         query_counts.append(metrics["Number_of_queries:"])
         accuracies.append(metrics["Accuracy"] * 100)
+        times.append(metrics["Time"])
 
 df = pd.DataFrame({
     "Checker": checker_names,
     "Dataset": datasets,
     "Correct": correct_counts,
     "Queries": query_counts,
-    "Accuracy": accuracies
+    "Accuracy": accuracies,
+    "Time": times
 })
 
 sns.set_theme(style="whitegrid")
 plt.figure(figsize=(12, 6))
 bar_plot = sns.barplot(x="Dataset", y="Accuracy", hue="Checker", data=df)
-
 # Customize the x-axis labels to include number of queries
+plt.gca().set_yticklabels([f"{int(y)}%" for y in bar_plot.get_yticks()])
 dataset_labels = []
 for dataset in df['Dataset'].unique():
     num_queries = df[df['Dataset'] == dataset]['Queries'].iloc[0]
     dataset_labels.append(f"{dataset}\n(Queries: {num_queries})")
 
 # Apply custom labels
-bar_plot.set_xticklabels(dataset_labels)
-plt.gca().set_yticklabels([f"{int(y)}%" for y in bar_plot.get_yticks()])
+# Remove the secondary y-axis label
 
-# Add title and labels
-plt.title("Accuracy of Spell Checkers across Datasets")
-plt.xlabel("Dataset")
-plt.ylabel("Accuracy")
-plt.ylim(0, 100)
-plt.legend(title="Spell Checker")
-plt.tight_layout()
+
+fig, axes = plt.subplots(1, figsize=(12, 6))
+
+# Plot accuracy
+sns.set_theme(style="whitegrid")
+# Plot time taken
+time_plot = sns.barplot(x="Dataset", y="Time", hue="Checker", data=df)
+plt.gca().set_yticklabels([f"{y:.2f}s" for y in time_plot.get_yticks()])
+for p in time_plot.patches:
+    if p.get_height() > 0:
+        print(p.get_height())
+        time_plot.annotate(format(p.get_height(), '.1f'),
+                        (p.get_x() + p.get_width() / 2., p.get_height()),
+                        ha = 'center', va = 'center',
+                        xytext = (0, 9),
+                        textcoords = 'offset points')
+
+bar_plot.set_xticklabels(dataset_labels)
+time_plot.set_xticklabels(dataset_labels)
+plt.tight_layout()  
 plt.show()

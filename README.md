@@ -2,7 +2,7 @@
 
 ## The data is already generated and benchmarks are visible.
 
-## Reproduction of Results
+## Reproduction of Results:
 
 ### Setup
 
@@ -23,3 +23,5 @@ Use `script_name` script to install the right checkers onto your computer.
 To run a full benchmark:
 
     python3 -m controller.py all
+## Report
+After visualizing the data we can se
